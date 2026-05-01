@@ -25,6 +25,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 from statsmodels.formula.api import ols
 
 # ============================================================
@@ -36,10 +37,11 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("The Guardian Coverage of Ethiopia 1996-2021")
+st.title("The association of The Guardian Article Coverage on Ethiopia's Tourist arrivals (1996-2021)")
 st.markdown(
     "How has The Guardian media coverage, sentiment, and topics about Ethiopia "
-    "changed over time - and are they associated with tourist arrivals?"
+    "changed over time, and are they associated with tourist arrivals?"
+    "Repo: https://github.com/senagal/SenaAbdisa_Ethiopia_FinalProject"
 )
 
 # ============================================================
@@ -192,9 +194,78 @@ Due to legal policies against obtaining information from most sites, this projec
 2. How has the sentiment of their articles on Ethiopia changed over time?
 3. Which topics dominate Ethiopia related coverage?
 4. Do years with more or less focused coverage correlate with higher or lower tourist arrivals the following year?
-5. Do years with more or less negative coverage correspond to lower tourism the following year?
-6. Do years with more or less positive coverage correspond to higher or lower tourism the following year?
+5. Do years with more negative coverage correspond to lower tourism the following year?
+6. Do years with more positive coverage correspond to higher tourism the following year?
     """)
+
+    st.markdown("---")
+    st.subheader("Pipeline overview")
+    st.markdown("Here is how the four scripts connect and what each one produces. Run them in this order:")
+
+    pipeline_svg = """
+<svg width="100%" viewBox="0 0 680 520" role="img" xmlns="http://www.w3.org/2000/svg"
+     style="max-width:560px;display:block;margin:0 auto;">
+  <title>Ethiopia project pipeline flow</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Step 1 -->
+  <rect x="215" y="20" width="250" height="56" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+  <text x="340" y="42" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#085041">fetch_ethiopia.py</text>
+  <text x="340" y="60" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#0F6E56">Calls The Guardian API</text>
+
+  <line x1="340" y1="76" x2="340" y2="108" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- File 1 -->
+  <rect x="240" y="110" width="200" height="40" rx="6" fill="#F1EFE8" stroke="#888780" stroke-width="0.5"/>
+  <text x="340" y="130" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#444441">ethiopia_raw.json</text>
+  <text x="452" y="124" font-size="11" fill="#888780">~9,000 articles</text>
+  <text x="452" y="139" font-size="11" fill="#888780">1996 to 2021</text>
+
+  <line x1="340" y1="150" x2="340" y2="182" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 2 -->
+  <rect x="215" y="184" width="250" height="56" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+  <text x="340" y="206" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#085041">label_ethiopia.py</text>
+  <text x="340" y="224" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#0F6E56">Labels each article with GPT</text>
+
+  <line x1="340" y1="240" x2="340" y2="272" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- File 2 -->
+  <rect x="225" y="274" width="230" height="40" rx="6" fill="#F1EFE8" stroke="#888780" stroke-width="0.5"/>
+  <text x="340" y="294" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#444441">ethiopia_labelled.csv</text>
+  <text x="467" y="288" font-size="11" fill="#888780">topic, sentiment,</text>
+  <text x="467" y="303" font-size="11" fill="#888780">is_focus per article</text>
+
+  <line x1="340" y1="314" x2="340" y2="346" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Tourism CSV input from left -->
+  <rect x="28" y="354" width="168" height="44" rx="6" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+  <text x="112" y="371" text-anchor="middle" dominant-baseline="central" font-size="13" font-weight="500" fill="#633806">tourism CSV</text>
+  <text x="112" y="389" text-anchor="middle" dominant-baseline="central" font-size="11" fill="#854F0B">downloaded from Kaggle</text>
+  <line x1="196" y1="376" x2="213" y2="376" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Step 3 -->
+  <rect x="215" y="348" width="250" height="56" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+  <text x="340" y="370" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="500" fill="#085041">prepare_ethiopia.py</text>
+  <text x="340" y="388" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#0F6E56">Merges articles + tourism data</text>
+
+  <line x1="340" y1="404" x2="340" y2="436" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- File 3 -->
+  <rect x="225" y="438" width="230" height="40" rx="6" fill="#F1EFE8" stroke="#888780" stroke-width="0.5"/>
+  <text x="340" y="458" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#444441">ethiopia_analysis.csv</text>
+  <text x="467" y="452" font-size="11" fill="#888780">one row per year,</text>
+  <text x="467" y="467" font-size="11" fill="#888780">ready to analyse</text>
+
+  <line x1="340" y1="478" x2="340" y2="500" stroke="#888780" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="340" y="514" text-anchor="middle" font-size="12" fill="#0F6E56" font-weight="500">streamlit run streamlit.py</text>
+</svg>
+"""
+    components.html(pipeline_svg, height=540)
 
     st.markdown("---")
     st.subheader("How the Data Was Sourced and Cleaned")
