@@ -1,0 +1,9 @@
+openai
+pandas
+numpy
+requests
+streamlit
+matplotlib
+plotly
+statsmodels
+python-dotenv
